@@ -126,6 +126,7 @@
   // The site's initRelatedSwipers (in the All Articles / Events embeds) usually initialises the
   // swiper before products arrive; refresh it. If it never ran, start one with the same settings.
   function refreshSwiper(list) {
+    if (!list) return;
     var section = list.closest('[data-swiper="related-section"]');
     var wrap = list.closest('.swiper');
     if (!section || !wrap) return;
@@ -233,9 +234,20 @@
       .catch(function () { hideSection(root); });
   }
 
+  // Targets are found by data attribute when present, otherwise by the classes the Webflow
+  // components publish (headless attribute writes on these elements did not persist).
+  function targets(attrSelector, fallbackSelector) {
+    var found = document.querySelectorAll(attrSelector);
+    return found.length ? found : document.querySelectorAll(fallbackSelector);
+  }
+
   function boot() {
-    document.querySelectorAll('[data-proshop="latest"]').forEach(initLatest);
-    document.querySelectorAll('[data-proshop="photography"]').forEach(initPhotography);
+    targets('[data-proshop="latest"]', '[data-proshop-section="latest"] .related_swiper_list').forEach(initLatest);
+    targets('[data-proshop="photography"]', '[data-proshop-section="photography"] .proshop_photo').forEach(initPhotography);
+    // The static category rail has no data-swiper="related" tag, so the site's init skips it.
+    document.querySelectorAll('.proshop_cat_card').forEach(function (card, i) {
+      if (i === 0) refreshSwiper(card.closest('.related_swiper_list'));
+    });
   }
 
   if (document.readyState === 'loading') {
