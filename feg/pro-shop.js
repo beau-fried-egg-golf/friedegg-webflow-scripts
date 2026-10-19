@@ -33,6 +33,16 @@
     return src + (src.indexOf('?') > -1 ? '&' : '?') + 'width=' + width;
   }
 
+  // Webflow image elements carry a default asset with srcset/sizes; drop those so the Shopify
+  // photo actually replaces it.
+  function setImage(img, src, alt) {
+    if (!img) return;
+    img.removeAttribute('srcset');
+    img.removeAttribute('sizes');
+    img.src = src;
+    img.alt = alt;
+  }
+
   function productUrl(handle) {
     return SHOP + '/products/' + encodeURIComponent(handle) + '?' + UTM;
   }
@@ -169,6 +179,7 @@
     var dots = root.querySelector('.proshop_photo_thumbs');
     var template = dots && dots.querySelector('.proshop_photo_dot');
     if (!main || !card || !dots || !template) return;
+    main.removeAttribute('loading');
 
     loadCollection(root.getAttribute('data-collection') || 'prints', PHOTO_COUNT)
       .then(function (prints) {
@@ -186,11 +197,7 @@
           dot.setAttribute('role', 'button');
           dot.setAttribute('tabindex', '0');
           dot.setAttribute('aria-label', 'Show ' + p.title);
-          var img = dot.querySelector('img');
-          if (img) {
-            img.src = sized(p.image, 160);
-            img.alt = '';
-          }
+          setImage(dot.querySelector('img'), sized(p.image, 160), '');
           dot.addEventListener('click', function () { show(i); });
           dot.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -204,12 +211,8 @@
 
         function show(i) {
           var p = prints[i];
-          main.src = sized(p.image, 2000);
-          main.alt = p.title;
-          if (thumb) {
-            thumb.src = sized(p.image, 240);
-            thumb.alt = '';
-          }
+          setImage(main, sized(p.image, 1600), p.title);
+          setImage(thumb, sized(p.image, 240), '');
           if (title) title.textContent = p.title;
           if (price) price.textContent = (p.varies ? 'From ' : '') + money(p.price);
           card.href = productUrl(p.handle);
@@ -224,7 +227,7 @@
         // Warm the cache so switching prints is instant.
         prints.slice(1).forEach(function (p) {
           var pre = new Image();
-          pre.src = sized(p.image, 2000);
+          pre.src = sized(p.image, 1600);
         });
       })
       .catch(function () { hideSection(root); });
