@@ -6,6 +6,7 @@ Custom JavaScript for **thefriedegg.com** (Webflow), loaded from this repo via j
 | Script | Used on | Loaded from |
 |---|---|---|
 | `feg/guides.js` → `feg/guides.min.js` | Guides Template (`/guides/<slug>`) | Page settings → Footer code |
+| `feg/pro-shop.js` → `feg/pro-shop.min.js` | Homepage (Pro Shop Latest + Photography sections) | Page settings → Footer code |
 
 ## Deploying a change
 
@@ -32,3 +33,11 @@ but a slug that is simply missing from the field will fall to the bottom.
 
 `feg/guides.original.js` is the agency version this was forked from (Neon-Hive/webflow, Jan 2026),
 kept for diffing. See the header comment in `feg/guides.js` for the list of fixes.
+
+## Homepage Pro Shop sections
+
+`feg/pro-shop.js` fills `[data-proshop="latest"]` and `[data-proshop="photography"]` from the Pro Shop's
+public Shopify JSON (`proshop.thefriedegg.com/collections/<data-collection>/products.json`). Skips sold-out
+items, gift cards and products without photos; tags "Sale" (compare-at price) and "Members only" (Shopify
+tag `FEGC Shop`). A section hides itself if Shopify fails. Deleting a section's instance in the Designer
+needs no script change. Rebuild with `npx esbuild feg/pro-shop.js --minify --target=es2020 --outfile=feg/pro-shop.min.js`.
