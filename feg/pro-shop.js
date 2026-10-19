@@ -100,7 +100,7 @@
         '<div class="g_article_tag_text u-text-style-tiny u-text-transform-uppercase u-weight-medium">Sale</div></div>';
     }
     if (p.membersOnly) {
-      tags += '<div data-radius="round" class="g_article_tag_wrap">' +
+      tags += '<div data-radius="round" class="g_article_tag_wrap u-bg-orange u-color-black">' +
         '<div class="g_article_tag_text u-text-style-tiny u-text-transform-uppercase u-weight-medium">Members only</div></div>';
     }
     var info = '<div class="g_article_info_text u-text-style-small">' + (p.varies ? 'From ' : '') + money(p.price) + '</div>';
