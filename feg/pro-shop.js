@@ -18,10 +18,11 @@
   var UTM = 'utm_source=thefriedegg&utm_medium=homepage&utm_campaign=pro_shop_section';
   var LATEST_COUNT = 10;
   var PHOTO_COUNT = 5;
-  // Hand-picked prints whose photos are all exactly 5464x3070, so the Photography frame never
-  // changes height when switching prints. Swap a handle for another 5464x3070 print to change one.
+  // Hand-picked prints that all share one shape (5464x3070, or St Andrews' 5272x2962, which
+  // differs by 0.03px at full width), so the Photography frame never changes height when switching
+  // prints. Swap a handle only for a print with the same shape (width / height = 1.780).
   var PHOTO_HANDLES = [
-    'the-4th-at-torrey-pines',
+    'st-andrews-the-old-course-no-16',
     'the-12th-at-whistling-straits',
     'behind-the-7th-green-at-prairie-dunes',
     'the-9th-green-at-erin-hills',
