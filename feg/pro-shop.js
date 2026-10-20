@@ -3,7 +3,7 @@
  *
  * Fills two Webflow components on the homepage:
  *   • Section / Pro Shop Latest       → [data-proshop="latest"]       (swiper-wrapper inside a related-section)
- *   • Section / Pro Shop Photography  → [data-proshop="photography"]  (big photo + thumbnails)
+ *   • Section / Pro Shop Photography  → [data-proshop="photography"]  (big photo + thumbnails; prints in PHOTO_HANDLES)
  * Each target names its Shopify collection in data-collection (e.g. "new-arrivals", "prints").
  *
  * Reads the Pro Shop's public collection JSON (no key; Shopify sends Access-Control-Allow-Origin: *).
@@ -18,6 +18,15 @@
   var UTM = 'utm_source=thefriedegg&utm_medium=homepage&utm_campaign=pro_shop_section';
   var LATEST_COUNT = 10;
   var PHOTO_COUNT = 5;
+  // Hand-picked prints whose photos are all exactly 5464x3070, so the Photography frame never
+  // changes height when switching prints. Swap a handle for another 5464x3070 print to change one.
+  var PHOTO_HANDLES = [
+    'the-4th-at-torrey-pines',
+    'the-12th-at-whistling-straits',
+    'behind-the-7th-green-at-prairie-dunes',
+    'the-9th-green-at-erin-hills',
+    'streamsong-blues-7th'
+  ];
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -77,6 +86,30 @@
         });
         return out;
       });
+  }
+
+  // Specific products, in the given order, via the per-product endpoint (prices in cents).
+  // Sold-out or removed products are skipped.
+  function loadProducts(handles) {
+    return Promise.all(handles.map(function (h) {
+      return fetch(SHOP + '/products/' + encodeURIComponent(h) + '.js', { credentials: 'omit' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .catch(function () { return null; });
+    })).then(function (products) {
+      return products.filter(function (p) {
+        return p && p.available && p.images && p.images.length;
+      }).map(function (p) {
+        var prices = p.variants.filter(function (v) { return v.available; }).map(function (v) { return v.price / 100; });
+        var low = Math.min.apply(null, prices);
+        return {
+          title: p.title,
+          handle: p.handle,
+          image: (p.images[0].indexOf('//') === 0 ? 'https:' : '') + p.images[0],
+          price: low,
+          varies: prices.some(function (x) { return x !== low; })
+        };
+      });
+    });
   }
 
   function hideSection(el) {
@@ -182,7 +215,11 @@
     if (!main || !card || !dots || !template) return;
     main.removeAttribute('loading');
 
-    loadCollection(root.getAttribute('data-collection') || 'prints', PHOTO_COUNT)
+    loadProducts(PHOTO_HANDLES)
+      .then(function (picked) {
+        // Only fall back to the collection's first prints if most of the picks are gone.
+        return picked.length >= 3 ? picked : loadCollection(root.getAttribute('data-collection') || 'prints', PHOTO_COUNT);
+      })
       .then(function (prints) {
         if (!prints.length) return hideSection(root);
         [expand, card].forEach(function (a) {
