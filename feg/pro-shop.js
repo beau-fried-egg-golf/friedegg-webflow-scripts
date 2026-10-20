@@ -219,7 +219,7 @@
           card.href = productUrl(p.handle);
           if (expand) expand.href = productUrl(p.handle);
           buttons.forEach(function (b, j) {
-            b.style.borderColor = j === i ? 'var(--_colours---base--white)' : 'transparent';
+            b.classList.toggle('is-active', j === i); // border colour per breakpoint lives in Webflow
             b.setAttribute('aria-pressed', j === i ? 'true' : 'false');
           });
         }
